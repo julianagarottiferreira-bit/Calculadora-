@@ -1,48 +1,65 @@
 import streamlit as st
 
-st.title("Calculadora")
+# 1. CSS para arredondar os botões e ajustar o tamanho
+st.markdown("""
+    <style>
+    div.stButton > button {
+        border-radius: 50px;
+        height: 65px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    /* Aumentar o tamanho do texto do visor */
+    input {
+        font-size: 40px !important;
+        text-align: right;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# 1. Criando a "memória" para lembrar os números digitados no visor
+# 2. Criando a "memória" para lembrar os números
 if 'visor' not in st.session_state:
     st.session_state.visor = ""
 
-# 2. Desenhando a tela do visor
+# Visor da calculadora
 st.text_input("", st.session_state.visor, disabled=True)
 
-# Função que decide o que acontece ao apertar cada tecla
+# 3. Lógica matemática de cada tecla
 def apertar_tecla(tecla):
     if tecla == "C":
         st.session_state.visor = ""
+    elif tecla == "⌫": # Apaga apenas o último caracter
+        st.session_state.visor = st.session_state.visor[:-1]
     elif tecla == "=":
         try:
-            # O comando eval faz a conta matemática do texto (ex: "2+2" vira 4)
-            st.session_state.visor = str(eval(st.session_state.visor))
+            # O Python calcula com pontos e asteriscos, por isso traduzimos os símbolos
+            conta = st.session_state.visor.replace(",", ".").replace("×", "*").replace("÷", "/").replace("%", "/100")
+            resultado = str(eval(conta))
+            # Devolve a vírgula para o visor
+            st.session_state.visor = resultado.replace(".", ",")
         except:
             st.session_state.visor = "Erro"
+    elif tecla == "( )":
+        # Conta se precisa de abrir ou fechar o parênteses
+        abertos = st.session_state.visor.count("(")
+        fechados = st.session_state.visor.count(")")
+        if abertos == fechados:
+            st.session_state.visor += "("
+        else:
+            st.session_state.visor += ")"
     else:
         st.session_state.visor += str(tecla)
 
-# 3. Construindo as fileiras de botões (4 colunas para manter o layout alinhado)
-linha1 = st.columns(4)
-linha1[0].button("7", use_container_width=True, on_click=apertar_tecla, args=("7",))
-linha1[1].button("8", use_container_width=True, on_click=apertar_tecla, args=("8",))
-linha1[2].button("9", use_container_width=True, on_click=apertar_tecla, args=("9",))
-linha1[3].button("/", use_container_width=True, on_click=apertar_tecla, args=("/",))
+# 4. Construindo a grelha exata de 5 linhas e 4 colunas
+botoes = [
+    ["C", "⌫", "%", "÷"],
+    ["7", "8", "9", "×"],
+    ["4", "5", "6", "-"],
+    ["1", "2", "3", "+"],
+    ["( )", "0", ",", "="]
+]
 
-linha2 = st.columns(4)
-linha2[0].button("4", use_container_width=True, on_click=apertar_tecla, args=("4",))
-linha2[1].button("5", use_container_width=True, on_click=apertar_tecla, args=("5",))
-linha2[2].button("6", use_container_width=True, on_click=apertar_tecla, args=("6",))
-linha2[3].button("*", use_container_width=True, on_click=apertar_tecla, args=("*",))
-
-linha3 = st.columns(4)
-linha3[0].button("1", use_container_width=True, on_click=apertar_tecla, args=("1",))
-linha3[1].button("2", use_container_width=True, on_click=apertar_tecla, args=("2",))
-linha3[2].button("3", use_container_width=True, on_click=apertar_tecla, args=("3",))
-linha3[3].button("-", use_container_width=True, on_click=apertar_tecla, args=("-",))
-
-linha4 = st.columns(4)
-linha4[0].button("C", use_container_width=True, on_click=apertar_tecla, args=("C",))
-linha4[1].button("0", use_container_width=True, on_click=apertar_tecla, args=("0",))
-linha4[2].button("=", use_container_width=True, on_click=apertar_tecla, args=("=",))
-linha4[3].button("+", use_container_width=True, on_click=apertar_tecla, args=("+",))
+for linha in botoes:
+    colunas = st.columns(4)
+    for i, tecla in enumerate(linha):
+        colunas[i].button(tecla, use_container_width=True, on_click=apertar_tecla, args=(tecla,))
