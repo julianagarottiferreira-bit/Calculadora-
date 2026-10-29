@@ -20,14 +20,20 @@ ESCURO = dict(
     LINHA="rgba(255, 255, 255, 0.08)", SOMBRA_IGUAL="rgba(91, 109, 192, 0.45)",
 )
 
-# Tema inicial: tenta seguir o tema do Streamlit/celular; depois a chave "Tema escuro" manda
-if "tema_escuro" not in st.session_state:
+# Tema: "Claro" e "Escuro" trocam na hora (seletor no fim da tela).
+# "Auto" segue o tema do Streamlit/celular (esse só atualiza ao recarregar a página).
+escolha_tema = st.session_state.get("tema") or "Auto"
+if escolha_tema == "Escuro":
+    TEMA_ESCURO = True
+elif escolha_tema == "Claro":
+    TEMA_ESCURO = False
+else:
     try:
-        st.session_state.tema_escuro = st.context.theme.type == "dark"
+        TEMA_ESCURO = st.context.theme.type == "dark"
     except Exception:
-        st.session_state.tema_escuro = False
+        TEMA_ESCURO = False
 
-P = ESCURO if st.session_state.tema_escuro else CLARO
+P = ESCURO if TEMA_ESCURO else CLARO
 FUNDO = P["FUNDO"]
 TECLA_1 = P["TECLA_1"]
 TECLA_2 = P["TECLA_2"]
@@ -152,6 +158,19 @@ div.stButton > button:active {{
 
 /* Chave do "mostrar histórico" */
 div[data-testid="stToggle"] p {{ color: {TEXTO} !important; font-size: 16px; }}
+
+/* Seletor de tema */
+div[data-testid="stButtonGroup"] button {{
+    background: {CARD} !important;
+    border-color: {LINHA} !important;
+}}
+div[data-testid="stButtonGroup"] button p {{ color: {TEXTO} !important; }}
+div[data-testid="stButtonGroup"] button[data-testid="stBaseButton-segmented_controlActive"] {{
+    background: {AZUL_BG} !important;
+}}
+div[data-testid="stButtonGroup"] button[data-testid="stBaseButton-segmented_controlActive"] p {{
+    color: #ffffff !important;
+}}
 </style>
 """,
     unsafe_allow_html=True,
@@ -293,11 +312,14 @@ for linha in teclado:
 # 5. HISTÓRICO (campo separado, pode ser ocultado)
 # ---------------------------------------------------------------
 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-c1, c2 = st.columns(2)
-with c1:
-    mostrar = st.toggle("Histórico", value=True, key="mostrar_hist")
-with c2:
-    st.toggle("Tema escuro", key="tema_escuro")
+st.segmented_control(
+    "Tema",
+    ["Auto", "Claro", "Escuro"],
+    default="Auto",
+    key="tema",
+    label_visibility="collapsed",
+)
+mostrar = st.toggle("Histórico", value=True, key="mostrar_hist")
 
 if mostrar:
     if st.session_state.historico:
