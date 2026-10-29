@@ -7,12 +7,39 @@ st.set_page_config(page_title="Calculadora", page_icon="🧮", layout="centered"
 # ---------------------------------------------------------------
 # PALETA
 # ---------------------------------------------------------------
-FUNDO = "#e4e3de"
-TECLA_1 = "#ebe5d8"
-TECLA_2 = "#dcd8c9"
-TEXTO = "#2f2f2f"
-AZUL = "#4b5a94"
-VERMELHO = "#d1401f"
+CLARO = dict(
+    FUNDO="#e4e3de", TECLA_1="#ebe5d8", TECLA_2="#dcd8c9", TEXTO="#2f2f2f",
+    AZUL="#4b5a94", AZUL_BG="#4b5a94", VERMELHO="#d1401f",
+    CARD="#ecebe6", HIST_TXT="#555555", SUTIL="#8a8a82",
+    LINHA="rgba(0, 0, 0, 0.06)", SOMBRA_IGUAL="rgba(75, 90, 148, 0.35)",
+)
+ESCURO = dict(
+    FUNDO="#1c1c1e", TECLA_1="#3b3b40", TECLA_2="#2e2e33", TEXTO="#f2f2f2",
+    AZUL="#9db0ff", AZUL_BG="#5b6dc0", VERMELHO="#ff6b4a",
+    CARD="#26262a", HIST_TXT="#c8c8cc", SUTIL="#8e8e93",
+    LINHA="rgba(255, 255, 255, 0.08)", SOMBRA_IGUAL="rgba(91, 109, 192, 0.45)",
+)
+
+# Tema inicial: tenta seguir o tema do Streamlit/celular; depois a chave "Tema escuro" manda
+if "tema_escuro" not in st.session_state:
+    try:
+        st.session_state.tema_escuro = st.context.theme.type == "dark"
+    except Exception:
+        st.session_state.tema_escuro = False
+
+P = ESCURO if st.session_state.tema_escuro else CLARO
+FUNDO = P["FUNDO"]
+TECLA_1 = P["TECLA_1"]
+TECLA_2 = P["TECLA_2"]
+TEXTO = P["TEXTO"]
+AZUL = P["AZUL"]
+AZUL_BG = P["AZUL_BG"]
+VERMELHO = P["VERMELHO"]
+CARD = P["CARD"]
+HIST_TXT = P["HIST_TXT"]
+SUTIL = P["SUTIL"]
+LINHA = P["LINHA"]
+SOMBRA_IGUAL = P["SOMBRA_IGUAL"]
 
 # ---------------------------------------------------------------
 # 1. VISUAL (CSS)
@@ -24,7 +51,7 @@ st.markdown(
 .stApp, [data-testid="stAppViewContainer"] {{
     background: {FUNDO} !important;
 }}
-header[data-testid="stHeader"] {{ background: transparent !important; }}
+header[data-testid="stHeader"] {{ background: transparent !important; color: {TEXTO} !important; }}
 
 /* Largura de celular, centralizado */
 .block-container {{
@@ -100,7 +127,7 @@ div.stButton > button:active {{
 
 /* Histórico */
 .hist-card {{
-    background: #ecebe6;
+    background: {CARD};
     border-radius: 24px;
     padding: 14px 20px 8px 20px;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.07);
@@ -109,19 +136,19 @@ div.stButton > button:active {{
     font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #8a8a82;
+    color: {SUTIL};
     margin-bottom: 6px;
 }}
 .hist-item {{
     text-align: right;
-    color: #555;
+    color: {HIST_TXT};
     font-size: 19px;
     padding: 8px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid {LINHA};
 }}
 .hist-item:last-child {{ border-bottom: none; }}
 .hist-item b {{ color: {AZUL}; font-weight: 500; }}
-.hist-vazio {{ color: #9a9a92; text-align: center; padding: 14px 0; font-size: 15px; }}
+.hist-vazio {{ color: {SUTIL}; text-align: center; padding: 14px 0; font-size: 15px; }}
 
 /* Chave do "mostrar histórico" */
 div[data-testid="stToggle"] p {{ color: {TEXTO} !important; font-size: 16px; }}
@@ -147,8 +174,8 @@ st.markdown(
 {alvo(["c"], "button p")} {{ color: {VERMELHO} !important; }}
 
 {alvo(["eq"], "button")} {{
-    background: {AZUL} !important;
-    box-shadow: 0 8px 14px rgba(75, 90, 148, 0.35) !important;
+    background: {AZUL_BG} !important;
+    box-shadow: 0 8px 14px {SOMBRA_IGUAL} !important;
 }}
 {alvo(["eq"], "button p")} {{ color: #ffffff !important; font-size: 40px !important; }}
 
@@ -270,7 +297,7 @@ c1, c2 = st.columns(2)
 with c1:
     mostrar = st.toggle("Histórico", value=True, key="mostrar_hist")
 with c2:
-    botao("Limpar", "limpar", on_click=limpar_historico)
+    st.toggle("Tema escuro", key="tema_escuro")
 
 if mostrar:
     if st.session_state.historico:
@@ -284,3 +311,5 @@ if mostrar:
         f'<div class="hist-card"><div class="hist-titulo">Histórico</div>{itens}</div>',
         unsafe_allow_html=True,
     )
+    if st.session_state.historico:
+        botao("Limpar histórico", "limpar", on_click=limpar_historico)
