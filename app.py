@@ -1,46 +1,52 @@
 import streamlit as st
 
-# 1. CSS atualizado e otimizado para o ecrã do telemóvel
+# 1. CSS agressivo para forçar a grelha de 4 colunas e corrigir o visor cortado
 st.markdown("""
     <style>
-    /* Esconde as margens laterais exageradas do Streamlit no telemóvel */
+    /* Remove margens gerais do ecrã */
     .block-container {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-        padding-top: 2rem !important;
+        padding: 1rem !important;
         max-width: 100% !important;
+        overflow-x: hidden !important;
     }
 
-    /* Ajusta o bloco principal para não transbordar e manter as teclas na mesma linha */
+    /* Força as linhas a comportarem-se como uma grelha horizontal, sem empilhar */
     div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
         flex-wrap: nowrap !important;
-        gap: 8px !important;
+        gap: 2% !important; /* Espaçamento mínimo */
         width: 100% !important;
-        padding: 0px !important;
+        padding: 0 !important;
     }
     
-    /* Força exatamente as 4 colunas a caberem no ecrã (compensando os espaços) */
+    /* Força as 4 colunas a dividirem o ecrã em partes exatamente iguais */
     div[data-testid="column"] {
-        width: 22% !important;
-        flex: 1 1 22% !important;
+        width: 23% !important;
+        flex: 1 1 0px !important; 
         min-width: 0 !important;
+        padding: 0 !important;
     }
     
-    /* Visual dos botões redondos e perfeitamente centrados */
+    /* Ajusta os botões para ficarem proporcionais */
     div.stButton > button {
-        border-radius: 50px;
-        height: 70px;
-        width: 100%;
-        font-size: 24px;
-        font-weight: bold;
+        border-radius: 15px !important; /* Ligeiramente arredondados */
+        height: 70px !important;
+        width: 100% !important;
+        font-size: 22px !important;
+        font-weight: bold !important;
         padding: 0 !important;
         margin: 0 !important;
     }
     
-    /* Texto grande no visor */
+    /* Aumenta a altura da caixa do visor para os números não ficarem cortados */
+    div[data-baseweb="input"] {
+        height: 80px !important;
+    }
     input {
-        font-size: 45px !important;
-        text-align: right;
+        font-size: 40px !important;
+        height: 80px !important;
+        text-align: right !important;
         border-radius: 15px !important;
     }
     </style>
@@ -50,26 +56,23 @@ st.markdown("""
 if 'visor' not in st.session_state:
     st.session_state.visor = ""
 
-# Visor da calculadora (com a etiqueta oculta para ficar mais limpo)
+# Visor da calculadora
 st.text_input("Visor", st.session_state.visor, disabled=True, label_visibility="collapsed")
 
 # 3. Lógica matemática de cada tecla
 def apertar_tecla(tecla):
     if tecla == "C":
         st.session_state.visor = ""
-    elif tecla == "⌫": # Apaga apenas o último caracter
+    elif tecla == "⌫": 
         st.session_state.visor = st.session_state.visor[:-1]
     elif tecla == "=":
         try:
-            # O Python calcula com pontos e asteriscos, por isso traduzimos os símbolos
             conta = st.session_state.visor.replace(",", ".").replace("×", "*").replace("÷", "/").replace("%", "/100")
             resultado = str(eval(conta))
-            # Devolve a vírgula para o visor
             st.session_state.visor = resultado.replace(".", ",")
         except:
             st.session_state.visor = "Erro"
     elif tecla == "( )":
-        # Conta se precisa de abrir ou fechar o parênteses
         abertos = st.session_state.visor.count("(")
         fechados = st.session_state.visor.count(")")
         if abertos == fechados:
