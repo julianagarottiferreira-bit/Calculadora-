@@ -1,53 +1,51 @@
 import streamlit as st
 
-# 1. CSS agressivo para forçar a grelha de 4 colunas e corrigir o visor cortado
+# 1. CSS com regras específicas para bloquear a proteção de telemóvel do Streamlit
 st.markdown("""
     <style>
-    /* Remove margens gerais do ecrã */
+    /* Limita a largura total para imitar o formato do telemóvel e centraliza */
     .block-container {
-        padding: 1rem !important;
-        max-width: 100% !important;
-        overflow-x: hidden !important;
+        max-width: 400px !important;
+        padding-top: 2rem !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+        margin: 0 auto !important;
     }
 
-    /* Força as linhas a comportarem-se como uma grelha horizontal, sem empilhar */
-    div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 2% !important; /* Espaçamento mínimo */
-        width: 100% !important;
-        padding: 0 !important;
+    /* O SEGREDO: Desliga a quebra automática do Streamlit em ecrãs pequenos */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 8px !important;
+        }
+        div[data-testid="column"] {
+            width: 25% !important;
+            flex: 1 1 25% !important;
+            min-width: 0 !important;
+        }
     }
-    
-    /* Força as 4 colunas a dividirem o ecrã em partes exatamente iguais */
-    div[data-testid="column"] {
-        width: 23% !important;
-        flex: 1 1 0px !important; 
-        min-width: 0 !important;
-        padding: 0 !important;
-    }
-    
-    /* Ajusta os botões para ficarem proporcionais */
+
+    /* Visual das teclas arredondadas */
     div.stButton > button {
-        border-radius: 15px !important; /* Ligeiramente arredondados */
+        border-radius: 50px !important;
         height: 70px !important;
+        font-size: 24px !important;
+        font-weight: 500 !important;
         width: 100% !important;
-        font-size: 22px !important;
-        font-weight: bold !important;
         padding: 0 !important;
         margin: 0 !important;
     }
-    
-    /* Aumenta a altura da caixa do visor para os números não ficarem cortados */
-    div[data-baseweb="input"] {
+
+    /* Ajuste do visor para caber os números na perfeição */
+    input {
+        font-size: 45px !important;
+        text-align: right !important;
+        border-radius: 20px !important;
         height: 80px !important;
     }
-    input {
-        font-size: 40px !important;
+    div[data-baseweb="input"] {
         height: 80px !important;
-        text-align: right !important;
-        border-radius: 15px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -59,7 +57,7 @@ if 'visor' not in st.session_state:
 # Visor da calculadora
 st.text_input("Visor", st.session_state.visor, disabled=True, label_visibility="collapsed")
 
-# 3. Lógica matemática de cada tecla
+# 3. Lógica matemática
 def apertar_tecla(tecla):
     if tecla == "C":
         st.session_state.visor = ""
@@ -68,8 +66,11 @@ def apertar_tecla(tecla):
     elif tecla == "=":
         try:
             conta = st.session_state.visor.replace(",", ".").replace("×", "*").replace("÷", "/").replace("%", "/100")
-            resultado = str(eval(conta))
-            st.session_state.visor = resultado.replace(".", ",")
+            # Calcula e remove casas decimais desnecessárias (ex: 4.0 vira 4)
+            resultado = eval(conta)
+            if resultado == int(resultado):
+                resultado = int(resultado)
+            st.session_state.visor = str(resultado).replace(".", ",")
         except:
             st.session_state.visor = "Erro"
     elif tecla == "( )":
@@ -82,7 +83,7 @@ def apertar_tecla(tecla):
     else:
         st.session_state.visor += str(tecla)
 
-# 4. Construindo a grelha exata de 5 linhas e 4 colunas
+# 4. Grelha de botões
 botoes = [
     ["C", "⌫", "%", "÷"],
     ["7", "8", "9", "×"],
