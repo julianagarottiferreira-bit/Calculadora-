@@ -1,8 +1,15 @@
 import re
+from pathlib import Path
 
 import streamlit as st
 
-st.set_page_config(page_title="Calculadora", page_icon="🧮", layout="centered")
+# Ícone: usa o arquivo icone.png (na mesma pasta do app.py); se não existir, usa um emoji
+_ICONE = Path(__file__).parent / "icone.png"
+st.set_page_config(
+    page_title="Calculadora",
+    page_icon=str(_ICONE) if _ICONE.exists() else "🧮",
+    layout="centered",
+)
 
 # ---------------------------------------------------------------
 # PALETA
