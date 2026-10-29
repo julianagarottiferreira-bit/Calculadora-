@@ -1,31 +1,47 @@
 import streamlit as st
 
-# 1. CSS atualizado para bloquear o empilhamento no telemóvel
+# 1. CSS atualizado e otimizado para o ecrã do telemóvel
 st.markdown("""
     <style>
-    /* Força as colunas a ficarem lado a lado */
-    div[data-testid="column"] {
-        width: 25% !important;
-        flex: 1 1 25% !important;
-        min-width: 0 !important;
+    /* Esconde as margens laterais exageradas do Streamlit no telemóvel */
+    .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-top: 2rem !important;
+        max-width: 100% !important;
     }
+
+    /* Ajusta o bloco principal para não transbordar e manter as teclas na mesma linha */
     div[data-testid="stHorizontalBlock"] {
         flex-wrap: nowrap !important;
-        gap: 5px !important;
+        gap: 8px !important;
+        width: 100% !important;
+        padding: 0px !important;
     }
     
-    /* Visual dos botões arredondados */
+    /* Força exatamente as 4 colunas a caberem no ecrã (compensando os espaços) */
+    div[data-testid="column"] {
+        width: 22% !important;
+        flex: 1 1 22% !important;
+        min-width: 0 !important;
+    }
+    
+    /* Visual dos botões redondos e perfeitamente centrados */
     div.stButton > button {
         border-radius: 50px;
-        height: 65px;
+        height: 70px;
+        width: 100%;
         font-size: 24px;
         font-weight: bold;
+        padding: 0 !important;
+        margin: 0 !important;
     }
     
     /* Texto grande no visor */
     input {
-        font-size: 40px !important;
+        font-size: 45px !important;
         text-align: right;
+        border-radius: 15px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -34,8 +50,8 @@ st.markdown("""
 if 'visor' not in st.session_state:
     st.session_state.visor = ""
 
-# Visor da calculadora
-st.text_input("", st.session_state.visor, disabled=True)
+# Visor da calculadora (com a etiqueta oculta para ficar mais limpo)
+st.text_input("Visor", st.session_state.visor, disabled=True, label_visibility="collapsed")
 
 # 3. Lógica matemática de cada tecla
 def apertar_tecla(tecla):
@@ -45,7 +61,7 @@ def apertar_tecla(tecla):
         st.session_state.visor = st.session_state.visor[:-1]
     elif tecla == "=":
         try:
-            # O Python calcula com pontos e asteriscos
+            # O Python calcula com pontos e asteriscos, por isso traduzimos os símbolos
             conta = st.session_state.visor.replace(",", ".").replace("×", "*").replace("÷", "/").replace("%", "/100")
             resultado = str(eval(conta))
             # Devolve a vírgula para o visor
@@ -53,6 +69,7 @@ def apertar_tecla(tecla):
         except:
             st.session_state.visor = "Erro"
     elif tecla == "( )":
+        # Conta se precisa de abrir ou fechar o parênteses
         abertos = st.session_state.visor.count("(")
         fechados = st.session_state.visor.count(")")
         if abertos == fechados:
